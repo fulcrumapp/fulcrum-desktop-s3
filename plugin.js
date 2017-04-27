@@ -1,9 +1,9 @@
-import Plugin from 'fulcrum-sync-plugin';
 import AWS from 'aws-sdk';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import fs from 'fs';
 import rimraf from 'rimraf';
+import { APIClient } from 'fulcrum';
 
 AWS.config.update({
   accessKeyId: process.env.S3_ACCESS_KEY,
@@ -14,31 +14,26 @@ const s3 = new AWS.S3();
 
 mkdirp.sync(path.join(__dirname, 'tmp'));
 
-export default class S3Plugin extends Plugin {
-  get enabled() {
-    return false;
-  }
+export default class {
+  async task() {
+    fulcrum.yargs.usage('Usage: s3 --org [org]')
+      .demandOption([ 'org' ])
+      .argv;
 
-  async runTask({app, yargs}) {
-    const args =
-      yargs.usage('Usage: s3 --org [org]')
-        .demandOption([ 'org' ])
-        .argv;
-
-    const account = await app.fetchAccount(args.org);
+    const account = await fulcrum.fetchAccount(fulcrum.args.org);
 
     if (account) {
       // do something
     } else {
-      console.error('Unable to find account', args.org);
+      console.error('Unable to find account', fulcrum.args.org);
     }
   }
 
-  async initialize({app}) {
-    app.on('photo:save', this.handlePhotoSave);
-    app.on('video:save', this.handleVideoSave);
-    app.on('audio:save', this.handleAudioSave);
-    app.on('signature:save', this.handleSignatureSave);
+  async activate() {
+    fulcrum.on('photo:save', this.handlePhotoSave);
+    fulcrum.on('video:save', this.handleVideoSave);
+    fulcrum.on('audio:save', this.handleAudioSave);
+    fulcrum.on('signature:save', this.handleSignatureSave);
   }
 
   tempPath(media) {
@@ -46,33 +41,33 @@ export default class S3Plugin extends Plugin {
   }
 
   handlePhotoSave = async ({account, photo}) => {
-    const downloadURL = this.app.api.Client.getPhotoURL(account, photo);
+    const downloadURL = APIClient.getPhotoURL(account, photo);
 
     await this.uploadFile(account, photo, downloadURL, `photos/${photo.id}.jpg`);
   }
 
   handleVideoSave = async ({account, video}) => {
-    const downloadURL = this.app.api.Client.getVideoURL(account, video);
+    const downloadURL = APIClient.getVideoURL(account, video);
 
-    await this.uploadFile(account, photo, downloadURL, `videos/${video.id}.mp4`);
+    await this.uploadFile(account, video, downloadURL, `videos/${video.id}.mp4`);
   }
 
   handleAudioSave = async ({account, audio}) => {
-    const downloadURL = this.app.api.Client.getAudioURL(account, audio);
+    const downloadURL = APIClient.getAudioURL(account, audio);
 
-    await this.uploadFile(account, photo, downloadURL, `audio/${audio.id}.m4a`);
+    await this.uploadFile(account, audio, downloadURL, `audio/${audio.id}.m4a`);
   }
 
   handleSignatureSave = async ({account, signature}) => {
-    const downloadURL = this.app.api.Client.getSignatureURL(account, signature);
+    const downloadURL = APIClient.getSignatureURL(account, signature);
 
-    await this.uploadFile(account, photo, downloadURL, `signatures/${signature.id}.png`);
+    await this.uploadFile(account, signature, downloadURL, `signatures/${signature.id}.png`);
   }
 
   async uploadFile(account, media, url, name) {
     const tempFile = this.tempPath(media);
 
-    await this.app.api.Client.download(url, tempFile);
+    await APIClient.download(url, tempFile);
 
     return new Promise((resolve, reject) => {
       s3.putObject({

@@ -5,8 +5,21 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.45.0",
-    "fulcrum-sync-plugin": "^1.0.1",
+    "fulcrum-sync-plugin": "^1.2.0",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.1"
+  },
+  "babel": {
+    "presets": [
+      "stage-0",
+      [
+        "env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
   }
 }
