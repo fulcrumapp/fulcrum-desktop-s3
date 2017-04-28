@@ -6,7 +6,7 @@ Sync media to your own S3 bucket.
 ### Installation
 
 ```sh
-./run install-plugin --git https://github.com/fulcrumapp/fulcrum-sync-s3-upload
+fulcrum install-plugin --url https://github.com/fulcrumapp/fulcrum-sync-s3-upload
 ```
 
 ### Configuration
