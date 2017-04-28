@@ -17,7 +17,7 @@ mkdirp.sync(path.join(__dirname, 'tmp'));
 export default class {
   async task(cli) {
     return cli.command({
-      command: 'reports',
+      command: 's3',
       desc: 'sync media for an organization to S3',
       builder: {
         org: {
