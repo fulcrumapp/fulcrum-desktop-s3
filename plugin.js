@@ -15,10 +15,23 @@ const s3 = new AWS.S3();
 mkdirp.sync(path.join(__dirname, 'tmp'));
 
 export default class {
-  async task() {
-    fulcrum.yargs.usage('Usage: s3 --org [org]')
-      .demandOption([ 'org' ])
-      .argv;
+  async task(cli) {
+    return cli.command({
+      command: 'reports',
+      desc: 'sync media for an organization to S3',
+      builder: {
+        org: {
+          desc: 'organization name',
+          required: true,
+          type: 'string'
+        }
+      },
+      handler: this.runCommand
+    });
+  }
+
+  runCommand = async () => {
+    // await this.activate();
 
     const account = await fulcrum.fetchAccount(fulcrum.args.org);
 
@@ -30,6 +43,8 @@ export default class {
   }
 
   async activate() {
+    return;
+
     fulcrum.on('photo:save', this.handlePhotoSave);
     fulcrum.on('video:save', this.handleVideoSave);
     fulcrum.on('audio:save', this.handleAudioSave);
