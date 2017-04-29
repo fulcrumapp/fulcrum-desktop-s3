@@ -1,15 +1,23 @@
 {
   "name": "fulcrum-sync-custom-plugin",
   "version": "1.0.0",
-  "main": "plugin.js",
+  "main": "dist/plugin.js",
   "license": "MIT",
+  "scripts": {
+    "build": "node_modules/.bin/babel *.js --out-dir dist --source-maps=inline",
+    "watch": "node_modules/.bin/babel *.js --out-dir dist --source-maps=inline --watch",
+    "clean": "rm -rf dist"
+  },
   "dependencies": {
     "aws-sdk": "^2.45.0",
-    "fulcrum-sync-plugin": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "rimraf": "^2.6.1"
+    "rimraf": "^2.6.1",
+    "fulcrum-sync-plugin": "^1.4.0"
   },
   "babel": {
+    "plugins": [
+      "fulcrum-sync"
+    ],
     "presets": [
       "stage-0",
       [
@@ -21,5 +29,9 @@
         }
       ]
     ]
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-fulcrum-sync": "^1.0.0"
   }
 }
