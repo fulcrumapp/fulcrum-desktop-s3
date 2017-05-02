@@ -1,12 +1,11 @@
-## Fulcrum Sync S3
+## Fulcrum Desktop S3
 
 Sync media to your own S3 bucket.
-
 
 ### Installation
 
 ```sh
-fulcrum install-plugin --url https://github.com/fulcrumapp/fulcrum-sync-s3-upload
+fulcrum install-plugin --url https://github.com/fulcrumapp/fulcrum-desktop-s3-upload
 ```
 
 ### Configuration
