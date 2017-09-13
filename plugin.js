@@ -43,8 +43,6 @@ export default class {
   }
 
   async activate() {
-    return;
-
     fulcrum.on('photo:save', this.handlePhotoSave);
     fulcrum.on('video:save', this.handleVideoSave);
     fulcrum.on('audio:save', this.handleAudioSave);
