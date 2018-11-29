@@ -5,13 +5,6 @@ import fs from 'fs';
 import rimraf from 'rimraf';
 import { APIClient } from 'fulcrum';
 
-AWS.config.update({
-  accessKeyId: process.env.S3_ACCESS_KEY,
-  secretAccessKey: process.env.S3_ACCESS_SECRET
-});
-
-const s3 = new AWS.S3();
-
 mkdirp.sync(path.join(__dirname, 'tmp'));
 
 export default class {
@@ -23,6 +16,18 @@ export default class {
         org: {
           desc: 'organization name',
           required: true,
+          type: 'string'
+        },
+        s3AccessKeyId: {
+          desc: 'S3 access key id',
+          type: 'string'
+        },
+        s3SecretAccessKey: {
+          desc: 'S3 secret access key',
+          type: 'string'
+        },
+        s3Bucket: {
+          desc: 'S3 bucket',
           type: 'string'
         }
       },
@@ -43,6 +48,13 @@ export default class {
   }
 
   async activate() {
+    AWS.config.update({
+      accessKeyId: fulcrum.args.s3AccessKeyId || process.env.S3_ACCESS_KEY,
+      secretAccessKey: fulcrum.args.s3SecretAccessKey || process.env.S3_ACCESS_SECRET
+    });
+
+    this.s3 = new AWS.S3();
+
     fulcrum.on('photo:save', this.handlePhotoSave);
     fulcrum.on('video:save', this.handleVideoSave);
     fulcrum.on('audio:save', this.handleAudioSave);
@@ -83,8 +95,8 @@ export default class {
     await APIClient.download(url, tempFile);
 
     return new Promise((resolve, reject) => {
-      s3.putObject({
-        Bucket: process.env.S3_BUCKET,
+      this.s3.putObject({
+        Bucket: fulcrum.args.s3Bucket || process.env.S3_BUCKET,
         Key: name,
         Body: fs.createReadStream(tempFile),
         ACL: 'public-read'

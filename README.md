@@ -5,14 +5,11 @@ Sync media to your own S3 bucket.
 ### Installation
 
 ```sh
-fulcrum install-plugin --url https://github.com/fulcrumapp/fulcrum-desktop-s3-upload
+fulcrum install-plugin --name s3
 ```
 
 ### Configuration
 
 ```
-export S3_ACCESS_KEY="key"
-export S3_ACCESS_SECRET="secret"
-export S3_BUCKET="mybucket"
-./run sync --org 'Fulcrum Account Name'
+./run sync --org 'Fulcrum Account Name' --s3-access-key-id "key" --s3-secret-access-key "secret" --s3-bucket "mybucket"
 ```
