@@ -29,6 +29,10 @@ export default class {
         s3Bucket: {
           desc: 'S3 bucket',
           type: 'string'
+        },
+        s3Region: {
+          desc: 'S3 region',
+          type: 'string'
         }
       },
       handler: this.runCommand
@@ -50,7 +54,8 @@ export default class {
   async activate() {
     AWS.config.update({
       accessKeyId: fulcrum.args.s3AccessKeyId || process.env.S3_ACCESS_KEY,
-      secretAccessKey: fulcrum.args.s3SecretAccessKey || process.env.S3_ACCESS_SECRET
+      secretAccessKey: fulcrum.args.s3SecretAccessKey || process.env.S3_ACCESS_SECRET,
+      region: fulcrum.args.s3Region || process.env.AWS_REGION
     });
 
     this.s3 = new AWS.S3();
