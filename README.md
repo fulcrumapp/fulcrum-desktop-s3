@@ -11,5 +11,7 @@ fulcrum install-plugin --name s3
 ### Configuration
 
 ```
-./run sync --org 'Fulcrum Account Name' --s3-access-key-id "key" --s3-secret-access-key "secret" --s3-bucket "mybucket"
+./run sync --org "Fulcrum Account Name" --s3-access-key-id "key" --s3-secret-access-key "secret" --s3-bucket "mybucket" --s3-region "us-west-1"
 ```
+
+_Note:_ When pushing to buckets in regions other than us-east-1 you must have AWS_REGION set by using the `--s3-region` parameter.
