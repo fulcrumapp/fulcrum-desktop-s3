@@ -10,9 +10,10 @@
   },
   "dependencies": {
     "aws-sdk": "^2.45.0",
+    "fulcrum-desktop-plugin": "^1.4.0",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.1",
-    "fulcrum-desktop-plugin": "^1.4.0"
+    "tempy": "^0.2.1"
   },
   "babel": {
     "plugins": [

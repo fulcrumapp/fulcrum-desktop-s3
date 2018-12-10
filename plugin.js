@@ -4,8 +4,9 @@ import mkdirp from 'mkdirp';
 import fs from 'fs';
 import rimraf from 'rimraf';
 import { APIClient } from 'fulcrum';
+import tempy from 'tempy';
 
-mkdirp.sync(path.join(__dirname, 'tmp'));
+const { log, warn, error } = fulcrum.logger.withContext('s3');
 
 export default class {
   async task(cli) {
@@ -29,6 +30,11 @@ export default class {
         s3Bucket: {
           desc: 'S3 bucket',
           type: 'string'
+        },
+        s3Region: {
+          desc: 'S3 region',
+          type: 'string',
+          default: 'us-east-1'
         }
       },
       handler: this.runCommand
@@ -36,21 +42,22 @@ export default class {
   }
 
   runCommand = async () => {
-    // await this.activate();
+    await this.activate();
 
     const account = await fulcrum.fetchAccount(fulcrum.args.org);
 
     if (account) {
-      // do something
+      await this.syncAll(account);
     } else {
-      console.error('Unable to find account', fulcrum.args.org);
+      error('Unable to find account', fulcrum.args.org);
     }
   }
 
   async activate() {
     AWS.config.update({
       accessKeyId: fulcrum.args.s3AccessKeyId || process.env.S3_ACCESS_KEY,
-      secretAccessKey: fulcrum.args.s3SecretAccessKey || process.env.S3_ACCESS_SECRET
+      secretAccessKey: fulcrum.args.s3SecretAccessKey || process.env.S3_ACCESS_SECRET,
+      region: fulcrum.args.s3Region || process.env.S3_REGION || 'us-east-1'
     });
 
     this.s3 = new AWS.S3();
@@ -59,10 +66,6 @@ export default class {
     fulcrum.on('video:save', this.handleVideoSave);
     fulcrum.on('audio:save', this.handleAudioSave);
     fulcrum.on('signature:save', this.handleSignatureSave);
-  }
-
-  tempPath(media) {
-    return path.join(__dirname, 'tmp', media.id);
   }
 
   handlePhotoSave = async ({account, photo}) => {
@@ -90,21 +93,48 @@ export default class {
   }
 
   async uploadFile(account, media, url, name) {
-    const tempFile = this.tempPath(media);
+    const tempFile = tempy.file({extension: 'download'});
 
     await APIClient.download(url, tempFile);
 
     return new Promise((resolve, reject) => {
+      const bodyStream = fs.createReadStream(tempFile);
+
       this.s3.putObject({
         Bucket: fulcrum.args.s3Bucket || process.env.S3_BUCKET,
         Key: name,
-        Body: fs.createReadStream(tempFile),
+        Body: bodyStream,
         ACL: 'public-read'
-      }, (res) => {
+      }, (err, data) => {
+        bodyStream.close();
+
         rimraf.sync(tempFile);
 
-        resolve();
+        if (err) {
+          error(err);
+          return reject(err);
+        }
+
+        resolve(data);
       });
+    });
+  }
+
+  async syncAll(account) {
+    await account.findEachPhoto({}, async (photo, {index}) => {
+      await this.handlePhotoSave({account, photo});
+    });
+
+    await account.findEachVideo({}, async (video, {index}) => {
+      await this.handleVideoSave({account, video});
+    });
+
+    await account.findEachAudio({}, async (audio, {index}) => {
+      await this.handleAudioSave({account, audio});
+    });
+
+    await account.findEachSignature({}, async (signature, {index}) => {
+      await this.handleSignatureSave({account, signature});
     });
   }
 }
